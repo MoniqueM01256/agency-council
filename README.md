@@ -1,2 +1,866 @@
 # agency-council
 A survey response analyser for the HPSS Agency Council
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agency Council Survey Analyser</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F5F2ED;
+    --surface: #FDFBF8;
+    --surface2: #EFECE6;
+    --ink: #1A1714;
+    --ink2: #6B6560;
+    --ink3: #9E9892;
+    --accent: #2B4FFF;
+    --accent-light: #E8ECFF;
+    --success: #1A7A4A;
+    --success-light: #E6F5ED;
+    --warn: #C45C00;
+    --warn-light: #FFF0E6;
+    --danger: #C42B2B;
+    --danger-light: #FDEAEA;
+    --border: rgba(26,23,20,0.1);
+    --border2: rgba(26,23,20,0.06);
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    min-height: 100vh;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  /* Header */
+  .header {
+    background: var(--ink);
+    color: var(--bg);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 60px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .logo-mark {
+    width: 28px;
+    height: 28px;
+    background: var(--accent);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .logo-mark svg { width: 16px; height: 16px; }
+  .header-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 17px;
+    letter-spacing: -0.01em;
+    color: #fff;
+  }
+  .header-badge {
+    font-size: 11px;
+    font-weight: 500;
+    background: rgba(255,255,255,0.12);
+    border-radius: 20px;
+    padding: 3px 10px;
+    color: rgba(255,255,255,0.7);
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+  }
+
+  /* Layout */
+  .main {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem 4rem;
+  }
+
+  /* Hero */
+  .hero {
+    margin-bottom: 2.5rem;
+  }
+  .hero h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(28px, 5vw, 40px);
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    margin-bottom: 10px;
+  }
+  .hero h1 em {
+    font-style: italic;
+    color: var(--accent);
+  }
+  .hero p {
+    color: var(--ink2);
+    font-size: 15px;
+    max-width: 520px;
+    line-height: 1.7;
+  }
+
+  /* Step indicator */
+  .steps {
+    display: flex;
+    gap: 0;
+    margin-bottom: 2rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .step {
+    flex: 1;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-right: 1px solid var(--border2);
+    transition: background 0.2s;
+  }
+  .step:last-child { border-right: none; }
+  .step-num {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--surface2);
+    color: var(--ink3);
+    font-size: 11px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.2s;
+  }
+  .step-label { font-size: 12px; color: var(--ink3); font-weight: 400; }
+  .step.active .step-num { background: var(--accent); color: #fff; }
+  .step.active .step-label { color: var(--ink); font-weight: 500; }
+  .step.done .step-num { background: var(--success); color: #fff; }
+  .step.done .step-label { color: var(--ink2); }
+
+  /* Card */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.75rem;
+    margin-bottom: 1.25rem;
+  }
+  .card-title {
+    font-size: 13px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink3);
+    margin-bottom: 1rem;
+  }
+
+  /* Upload zone */
+  .upload-zone {
+    border: 1.5px dashed var(--border);
+    border-radius: var(--radius-sm);
+    padding: 2.5rem 1.5rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: var(--bg);
+  }
+  .upload-zone:hover, .upload-zone.dragover {
+    border-color: var(--accent);
+    background: var(--accent-light);
+  }
+  .upload-icon {
+    width: 44px;
+    height: 44px;
+    background: var(--surface2);
+    border-radius: 10px;
+    margin: 0 auto 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+  }
+  .upload-zone:hover .upload-icon { background: var(--accent-light); }
+  .upload-zone:hover .upload-icon svg { color: var(--accent); }
+  .upload-title { font-size: 15px; font-weight: 500; color: var(--ink); margin-bottom: 5px; }
+  .upload-sub { font-size: 13px; color: var(--ink3); }
+  .upload-sub a { color: var(--accent); text-decoration: none; cursor: pointer; }
+  input[type=file] { display: none; }
+
+  /* File chosen */
+  .file-pill {
+    display: none;
+    align-items: center;
+    gap: 10px;
+    background: var(--success-light);
+    border: 1px solid rgba(26,122,74,0.2);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    margin-top: 12px;
+    font-size: 13px;
+    color: var(--success);
+  }
+  .file-pill.show { display: flex; }
+  .file-pill svg { flex-shrink: 0; }
+
+  /* Form elements */
+  label.lbl {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink2);
+    margin-bottom: 6px;
+  }
+  select, input[type=number], input[type=text] {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.15s;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+  select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B6560' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; }
+  select:focus, input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(43,79,255,0.1); }
+  input[type=number] { width: 100px; }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 12px;
+    align-items: end;
+    margin-top: 1.25rem;
+  }
+
+  .preview-text {
+    font-size: 12px;
+    color: var(--ink3);
+    margin-top: 7px;
+    line-height: 1.5;
+    font-style: italic;
+  }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 10px 20px;
+    border-radius: var(--radius-sm);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--ink);
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .btn:hover { background: var(--surface2); }
+  .btn:active { transform: scale(0.98); }
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+  }
+  .btn-primary:hover { background: #1A3FEF; border-color: #1A3FEF; }
+  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+  .btn-sm { padding: 7px 14px; font-size: 13px; }
+
+  /* Status / progress */
+  .status-card {
+    display: none;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem 1.75rem;
+    margin-bottom: 1.25rem;
+  }
+  .status-card.show { display: block; }
+  .status-label { font-size: 13px; color: var(--ink2); margin-bottom: 10px; }
+  .progress-track {
+    height: 5px;
+    background: var(--surface2);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 3px;
+    width: 0%;
+    transition: width 0.4s ease;
+  }
+
+  /* Error */
+  .error-banner {
+    display: none;
+    background: var(--danger-light);
+    border: 1px solid rgba(196,43,43,0.2);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    font-size: 13px;
+    color: var(--danger);
+    margin-top: 12px;
+  }
+  .error-banner.show { display: block; }
+
+  /* Results */
+  .results { display: none; }
+  .results.show { display: block; }
+
+  .results-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+  }
+  .results-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 24px;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+  }
+  .results-meta { font-size: 13px; color: var(--ink3); margin-top: 3px; }
+
+  /* Summary stats */
+  .stat-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 1.5rem;
+  }
+  .stat-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 14px 16px;
+  }
+  .stat-box-label { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink3); margin-bottom: 6px; }
+  .stat-box-value { font-family: 'DM Serif Display', serif; font-size: 28px; letter-spacing: -0.02em; color: var(--ink); line-height: 1; }
+  .stat-box-sub { font-size: 12px; color: var(--ink3); margin-top: 4px; }
+
+  /* Theme cards */
+  .theme-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 1.5rem; }
+
+  .theme-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    transition: border-color 0.15s;
+  }
+  .theme-item:hover { border-color: rgba(43,79,255,0.3); }
+
+  .theme-top {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+  .theme-rank-badge {
+    min-width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    background: var(--surface2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--ink3);
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .theme-rank-badge.top { background: var(--accent); color: #fff; }
+  .theme-info { flex: 1; }
+  .theme-name { font-size: 15px; font-weight: 500; color: var(--ink); line-height: 1.3; }
+  .theme-desc { font-size: 13px; color: var(--ink2); margin-top: 3px; line-height: 1.55; }
+  .theme-right { text-align: right; flex-shrink: 0; }
+  .theme-count { font-family: 'DM Serif Display', serif; font-size: 22px; color: var(--ink); line-height: 1; }
+  .theme-pct { font-size: 12px; color: var(--ink3); }
+
+  .theme-bar-track {
+    height: 4px;
+    background: var(--surface2);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 10px;
+  }
+  .theme-bar-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 2px;
+    transition: width 0.6s ease;
+  }
+  .theme-item:nth-child(2) .theme-bar-fill { background: #6B8AFF; }
+  .theme-item:nth-child(3) .theme-bar-fill { background: #96ACFF; }
+  .theme-item:nth-child(n+4) .theme-bar-fill { background: var(--surface2); }
+
+  .theme-examples {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 2px;
+  }
+  .example-tag {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 3px 10px;
+    font-size: 12px;
+    color: var(--ink3);
+    font-style: italic;
+  }
+
+  /* Export bar */
+  .export-bar {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border2);
+  }
+  .export-bar-label { font-size: 13px; color: var(--ink3); margin-right: 4px; }
+
+  /* API key note */
+  .api-note {
+    background: var(--warn-light);
+    border: 1px solid rgba(196,92,0,0.2);
+    border-radius: var(--radius-sm);
+    padding: 12px 16px;
+    font-size: 13px;
+    color: var(--warn);
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+  }
+  .api-note strong { font-weight: 500; }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    padding: 2rem 1rem 1rem;
+    font-size: 12px;
+    color: var(--ink3);
+    border-top: 1px solid var(--border2);
+    margin-top: 3rem;
+  }
+
+  @media (max-width: 600px) {
+    .header { padding: 0 1rem; }
+    .main { padding: 1.5rem 1rem 3rem; }
+    .stat-row { grid-template-columns: repeat(3, 1fr); }
+    .form-row { grid-template-columns: 1fr; }
+    .steps { display: none; }
+    .hero h1 { font-size: 26px; }
+    .card { padding: 1.25rem; }
+  }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-logo">
+    <div class="logo-mark">
+      <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="2" y="2" width="5" height="5" rx="1" fill="white"/>
+        <rect x="9" y="2" width="5" height="5" rx="1" fill="white" opacity="0.5"/>
+        <rect x="2" y="9" width="5" height="5" rx="1" fill="white" opacity="0.5"/>
+        <rect x="9" y="9" width="5" height="5" rx="1" fill="white"/>
+      </svg>
+    </div>
+    <span class="header-title">Agency Council</span>
+  </div>
+  <span class="header-badge">Survey Analyser</span>
+</header>
+
+<main class="main">
+
+  <div class="hero">
+    <h1>Turn survey responses<br>into <em>clear insights</em></h1>
+    <p>Upload your CSV export from Google Sheets and this tool will automatically identify the main themes and rank them by frequency — ready to report to Senior Leadership.</p>
+  </div>
+
+  <div id="apiWarning" class="api-note" style="display:none;">
+    <strong>API key not configured.</strong> Open this file in a text editor, find the line that says <code>const API_KEY = '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'</code> near the top of the &lt;script&gt; section, and replace <code>YOUR_API_KEY_HERE</code> with your Anthropic API key.
+  </div>
+
+  <div class="steps">
+    <div class="step active" id="step1"><div class="step-num">1</div><span class="step-label">Upload CSV</span></div>
+    <div class="step" id="step2"><div class="step-num">2</div><span class="step-label">Select column</span></div>
+    <div class="step" id="step3"><div class="step-num">3</div><span class="step-label">Analyse</span></div>
+    <div class="step" id="step4"><div class="step-num">4</div><span class="step-label">Results</span></div>
+  </div>
+
+  <!-- Upload card -->
+  <div class="card" id="uploadCard">
+    <div class="card-title">Step 1 — Upload your CSV</div>
+    <div class="upload-zone" id="dropZone">
+      <div class="upload-icon">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M4 14v3a1 1 0 001 1h12a1 1 0 001-1v-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M11 4v10M7.5 7.5L11 4l3.5 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="upload-title">Drop your CSV here</div>
+      <div class="upload-sub">or <a id="browseLink">click to browse</a></div>
+      <input type="file" id="fileInput" accept=".csv">
+    </div>
+    <div class="file-pill" id="filePill">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M13 5.5L6.5 12 3 8.5" stroke="#1A7A4A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span id="filePillText"></span>
+    </div>
+    <div class="error-banner" id="uploadError"></div>
+  </div>
+
+  <!-- Column select card -->
+  <div class="card" id="colCard" style="display:none;">
+    <div class="card-title">Step 2 — Choose your response column</div>
+    <label class="lbl" for="colSelect">Which column contains the open-ended responses?</label>
+    <select id="colSelect"></select>
+    <div class="preview-text" id="previewText"></div>
+
+    <div class="form-row" style="margin-top:1.25rem;">
+      <div>
+        <label class="lbl" for="maxThemes">Max themes to identify</label>
+        <input type="number" id="maxThemes" value="10" min="3" max="20">
+      </div>
+      <div>
+        <button class="btn btn-primary" id="analyseBtn">
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M2 7.5h11M9 3.5l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Analyse
+        </button>
+      </div>
+    </div>
+    <div class="error-banner" id="analyseError"></div>
+  </div>
+
+  <!-- Status card -->
+  <div class="status-card" id="statusCard">
+    <div class="status-label" id="statusLabel">Preparing analysis...</div>
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+  </div>
+
+  <!-- Results -->
+  <div class="results" id="resultsSection">
+    <div class="results-header">
+      <div>
+        <div class="results-title">Theme analysis</div>
+        <div class="results-meta" id="resultsMeta"></div>
+      </div>
+      <button class="btn btn-sm" id="resetBtn">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 6.5A4.5 4.5 0 1111 4M2 1v3.5H5.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        New analysis
+      </button>
+    </div>
+
+    <div class="stat-row" id="statRow"></div>
+    <div class="theme-list" id="themeList"></div>
+
+    <div class="export-bar">
+      <span class="export-bar-label">Export:</span>
+      <button class="btn btn-sm" id="exportCsvBtn">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 1v8M3.5 6l3 3 3-3M1 11h11" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        CSV report
+      </button>
+      <button class="btn btn-sm" id="copyBtn">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="4" y="4" width="7" height="8" rx="1" stroke="currentColor" stroke-width="1.2"/><path d="M2 9V2h7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+        Copy summary
+      </button>
+    </div>
+  </div>
+
+</main>
+
+<footer class="footer">
+  Agency Council Survey Analyser &nbsp;·&nbsp; Built for student voice
+</footer>
+
+<script>
+  // ─────────────────────────────────────────────
+  // PASTE YOUR ANTHROPIC API KEY BELOW
+  const API_KEY = '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';
+  // ─────────────────────────────────────────────
+
+  let csvData = [], headers = [], analysisResults = null;
+
+  const $ = id => document.getElementById(id);
+
+  // Check API key on load
+  window.addEventListener('DOMContentLoaded', () => {
+    if (!API_KEY || API_KEY === 'YOUR_API_KEY_HERE') {
+      $('apiWarning').style.display = 'block';
+    }
+  });
+
+  // Upload interactions
+  $('browseLink').addEventListener('click', e => { e.stopPropagation(); $('fileInput').click(); });
+  $('dropZone').addEventListener('click', () => $('fileInput').click());
+  $('fileInput').addEventListener('change', e => { if (e.target.files[0]) handleFile(e.target.files[0]); });
+  $('dropZone').addEventListener('dragover', e => { e.preventDefault(); $('dropZone').classList.add('dragover'); });
+  $('dropZone').addEventListener('dragleave', () => $('dropZone').classList.remove('dragover'));
+  $('dropZone').addEventListener('drop', e => { e.preventDefault(); $('dropZone').classList.remove('dragover'); if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]); });
+
+  function parseCSV(text) {
+    const lines = text.split(/\r?\n/).filter(l => l.trim());
+    return lines.map(line => {
+      const row = []; let inQ = false, cur = '';
+      for (let i = 0; i < line.length; i++) {
+        const ch = line[i];
+        if (ch === '"') { if (inQ && line[i+1] === '"') { cur += '"'; i++; } else inQ = !inQ; }
+        else if (ch === ',' && !inQ) { row.push(cur.trim()); cur = ''; }
+        else cur += ch;
+      }
+      row.push(cur.trim());
+      return row.map(c => c.replace(/^"|"$/g, '').trim());
+    });
+  }
+
+  function handleFile(file) {
+    setError('uploadError', '');
+    const reader = new FileReader();
+    reader.onload = e => {
+      try {
+        const rows = parseCSV(e.target.result);
+        if (rows.length < 2) { setError('uploadError', 'This CSV appears to be empty or only has a header row.'); return; }
+        headers = rows[0];
+        csvData = rows.slice(1).filter(r => r.some(c => c.length > 0));
+        const pill = $('filePill');
+        $('filePillText').textContent = file.name + ' — ' + csvData.length + ' responses loaded';
+        pill.classList.add('show');
+        const colSel = $('colSelect');
+        colSel.innerHTML = headers.map((h, i) => `<option value="${i}">${h || 'Column ' + (i+1)}</option>`).join('');
+        const guessed = headers.findIndex(h => /response|answer|comment|feedback|open|text|opinion|thought|suggest/i.test(h));
+        if (guessed >= 0) colSel.value = guessed;
+        $('colCard').style.display = 'block';
+        setStep(2);
+        updatePreview();
+      } catch(err) { setError('uploadError', 'Could not read this file. Please make sure it is a CSV export from Google Sheets.'); }
+    };
+    reader.readAsText(file);
+  }
+
+  $('colSelect').addEventListener('change', updatePreview);
+
+  function updatePreview() {
+    const idx = parseInt($('colSelect').value);
+    const samples = csvData.slice(0, 2).map(r => r[idx]).filter(Boolean);
+    $('previewText').textContent = samples.length ? 'Preview: ' + samples.map(s => '"' + s.slice(0, 70) + (s.length > 70 ? '…' : '') + '"').join('  ·  ') : '';
+  }
+
+  function setError(id, msg) {
+    const el = $(id);
+    el.textContent = msg;
+    el.className = 'error-banner' + (msg ? ' show' : '');
+  }
+
+  function setStep(n) {
+    for (let i = 1; i <= 4; i++) {
+      const s = $('step' + i);
+      s.className = 'step' + (i < n ? ' done' : i === n ? ' active' : '');
+    }
+  }
+
+  function setProgress(pct, msg) {
+    $('statusCard').classList.add('show');
+    $('statusLabel').textContent = msg;
+    $('progressFill').style.width = pct + '%';
+  }
+
+  $('analyseBtn').addEventListener('click', async () => {
+    if (!API_KEY || API_KEY === 'YOUR_API_KEY_HERE') {
+      setError('analyseError', 'Please add your API key to this file first. See the instructions at the top of the page.');
+      return;
+    }
+    const colIdx = parseInt($('colSelect').value);
+    const maxThemes = Math.max(3, Math.min(20, parseInt($('maxThemes').value) || 10));
+    const responses = csvData.map(r => r[colIdx]).filter(r => r && r.trim().length > 2);
+    if (responses.length < 3) { setError('analyseError', 'Not enough responses found in this column. Make sure you have selected the right column.'); return; }
+
+    $('analyseBtn').disabled = true;
+    setError('analyseError', '');
+    $('resultsSection').className = 'results';
+    setStep(3);
+
+    const BATCH = 60;
+    const batches = [];
+    for (let i = 0; i < responses.length; i += BATCH) batches.push(responses.slice(i, i + BATCH));
+
+    try {
+      let themes;
+      if (batches.length === 1) {
+        setProgress(15, 'Sending ' + responses.length + ' responses to Claude for analysis…');
+        themes = await analyseWithClaude(responses, maxThemes);
+        setProgress(100, 'Analysis complete!');
+      } else {
+        const partials = [];
+        for (let b = 0; b < batches.length; b++) {
+          const pct = Math.round(10 + ((b + 1) / batches.length) * 65);
+          setProgress(pct, 'Processing batch ' + (b+1) + ' of ' + batches.length + ' (' + batches[b].length + ' responses)…');
+          partials.push(...await analyseWithClaude(batches[b], maxThemes));
+        }
+        setProgress(82, 'Consolidating themes across all batches…');
+        themes = await consolidateThemes(partials, responses.length, maxThemes);
+        setProgress(100, 'Analysis complete!');
+      }
+
+      analysisResults = { themes, total: responses.length, column: headers[colIdx] };
+      renderResults(analysisResults);
+      setStep(4);
+    } catch(err) {
+      setError('analyseError', 'Error: ' + (err.message || 'Something went wrong. Check your API key and try again.'));
+      $('statusCard').classList.remove('show');
+      setStep(2);
+    }
+    $('analyseBtn').disabled = false;
+  });
+
+  async function callClaude(prompt) {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': API_KEY,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error?.message || 'API error ' + res.status);
+    }
+    const data = await res.json();
+    const text = data.content.map(b => b.text || '').join('');
+    return text.replace(/```json\n?|```/g, '').trim();
+  }
+
+  async function analyseWithClaude(responses, maxThemes) {
+    const prompt = `You are an analyst helping a student agency council understand survey feedback. Analyse these survey responses and identify the main themes.
+
+Responses:
+${responses.map((r, i) => (i+1) + '. ' + r).join('\n')}
+
+Identify up to ${maxThemes} distinct themes. For each theme estimate how many responses relate to it.
+
+Respond ONLY with a valid JSON array. No preamble, no markdown, no explanation. Format exactly:
+[{"theme":"Short theme name (3-5 words)","count":N,"description":"One clear sentence describing this theme.","examples":["brief excerpt or paraphrase 1","brief excerpt or paraphrase 2"]}]
+
+Order by count descending.`;
+    const raw = await callClaude(prompt);
+    return JSON.parse(raw);
+  }
+
+  async function consolidateThemes(partials, total, maxThemes) {
+    const summary = partials.map(t => `${t.theme} (${t.count}): ${t.description}`).join('\n');
+    const prompt = `You are an analyst helping a student agency council. Multiple batches of survey responses were analysed and produced these partial theme lists. Consolidate into up to ${maxThemes} final themes by merging similar themes and summing their counts. Total responses analysed: ${total}.
+
+Partial themes:
+${summary}
+
+Respond ONLY with a valid JSON array. No preamble, no markdown. Format:
+[{"theme":"Short theme name (3-5 words)","count":N,"description":"One clear sentence.","examples":["label 1","label 2"]}]
+
+Order by count descending.`;
+    const raw = await callClaude(prompt);
+    return JSON.parse(raw);
+  }
+
+  function renderResults(data) {
+    $('statusCard').classList.remove('show');
+    const total = data.total;
+    const top = data.themes[0]?.count || 1;
+
+    $('resultsMeta').textContent = data.column + ' · ' + total + ' responses · ' + data.themes.length + ' themes identified';
+
+    $('statRow').innerHTML = `
+      <div class="stat-box"><div class="stat-box-label">Responses</div><div class="stat-box-value">${total}</div><div class="stat-box-sub">total analysed</div></div>
+      <div class="stat-box"><div class="stat-box-label">Themes</div><div class="stat-box-value">${data.themes.length}</div><div class="stat-box-sub">distinct topics</div></div>
+      <div class="stat-box"><div class="stat-box-label">Top theme</div><div class="stat-box-value">${Math.round(data.themes[0]?.count / total * 100)}%</div><div class="stat-box-sub">${data.themes[0]?.theme || ''}</div></div>
+    `;
+
+    $('themeList').innerHTML = data.themes.map((t, i) => `
+      <div class="theme-item">
+        <div class="theme-top">
+          <div class="theme-rank-badge ${i < 3 ? 'top' : ''}">#${i+1}</div>
+          <div class="theme-info">
+            <div class="theme-name">${t.theme}</div>
+            <div class="theme-desc">${t.description}</div>
+          </div>
+          <div class="theme-right">
+            <div class="theme-count">${t.count}</div>
+            <div class="theme-pct">${Math.round(t.count / total * 100)}%</div>
+          </div>
+        </div>
+        <div class="theme-bar-track"><div class="theme-bar-fill" style="width:${Math.round(t.count / top * 100)}%"></div></div>
+        ${t.examples?.length ? `<div class="theme-examples">${t.examples.map(ex => `<span class="example-tag">${ex}</span>`).join('')}</div>` : ''}
+      </div>
+    `).join('');
+
+    $('resultsSection').className = 'results show';
+  }
+
+  $('resetBtn').addEventListener('click', () => {
+    csvData = []; headers = []; analysisResults = null;
+    $('fileInput').value = '';
+    $('filePill').classList.remove('show');
+    $('colCard').style.display = 'none';
+    $('statusCard').classList.remove('show');
+    $('resultsSection').className = 'results';
+    setError('uploadError', ''); setError('analyseError', '');
+    setStep(1);
+  });
+
+  $('exportCsvBtn').addEventListener('click', () => {
+    if (!analysisResults) return;
+    const rows = [['Rank','Theme','Count','Percentage','Description']];
+    analysisResults.themes.forEach((t, i) => {
+      rows.push([i+1, t.theme, t.count, Math.round(t.count / analysisResults.total * 100) + '%', t.description]);
+    });
+    const csv = rows.map(r => r.map(c => '"' + String(c).replace(/"/g, '""') + '"').join(',')).join('\n');
+    const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(new Blob([csv], {type:'text/csv'})), download: 'survey-themes.csv' });
+    a.click();
+  });
+
+  $('copyBtn').addEventListener('click', () => {
+    if (!analysisResults) return;
+    const text = 'AGENCY COUNCIL SURVEY ANALYSIS\n' + analysisResults.resultsMeta + '\n\n' +
+      analysisResults.themes.map((t, i) => `#${i+1} ${t.theme}\n${t.count} responses (${Math.round(t.count/analysisResults.total*100)}%) — ${t.description}`).join('\n\n');
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = $('copyBtn'); btn.textContent = 'Copied!';
+      setTimeout(() => { btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="4" y="4" width="7" height="8" rx="1" stroke="currentColor" stroke-width="1.2"/><path d="M2 9V2h7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg> Copy summary'; }, 1800);
+    });
+  });
+</script>
+</body>
+</html>
